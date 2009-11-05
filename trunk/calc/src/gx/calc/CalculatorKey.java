@@ -9,19 +9,27 @@ public class CalculatorKey {
 	private javax.swing.AbstractButton button;
 	private static final String[] numNames = { "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine" };
 	
-	public CalculatorKey(String displayValue, CalculatorAction action, CalculatorActionHandler actionHandler) {
-		this(displayValue, null, displayValue.charAt(0), action, actionHandler, null);
+	public CalculatorKey(CalculatorAction action, CalculatorActionHandler actionHandler, String displayValue) {
+		this(action, actionHandler, displayValue, null, displayValue.charAt(0), null, null);
 	}
 	
-	public CalculatorKey(String displayValue, String descriptionValue, CalculatorAction action, CalculatorActionHandler actionHandler) {
-		this(displayValue, descriptionValue, displayValue.charAt(0), action, actionHandler, null);
+	public CalculatorKey(CalculatorAction action, CalculatorActionHandler actionHandler, String displayValue, String descriptionValue) {
+		this(action, actionHandler, displayValue, descriptionValue, displayValue.charAt(0), null, null);
 	}
 	
-	public CalculatorKey(String displayValue, String descriptionValue, char keyBinding, CalculatorAction action, CalculatorActionHandler actionHandler) {
-		this(displayValue, descriptionValue, keyBinding, action, actionHandler, null);
+	public CalculatorKey(CalculatorAction action, CalculatorActionHandler actionHandler, String displayValue, String descriptionValue, char keyBinding) {
+		this(action, actionHandler, displayValue, descriptionValue, keyBinding, null, null);
 	}
 	
-	public CalculatorKey(String displayValue, String descriptionValue, char keyBinding, CalculatorAction action, CalculatorActionHandler actionHandler, String toggleGroup) {
+	public CalculatorKey(CalculatorAction action, CalculatorActionHandler actionHandler, String displayValue, String descriptionValue, char keyBinding, String toggleGroup) {
+		this(action, actionHandler, displayValue, descriptionValue, keyBinding, toggleGroup, null);
+	}
+	
+	public CalculatorKey(CalculatorAction action, CalculatorActionHandler actionHandler, String displayValue, String descriptionValue, char keyBinding, java.awt.Color color) {
+		this(action, actionHandler, displayValue, descriptionValue, keyBinding, null, color);
+	}
+	
+	public CalculatorKey(CalculatorAction action, CalculatorActionHandler actionHandler, String displayValue, String descriptionValue, char keyBinding, String toggleGroup, java.awt.Color color) {
 		this.keyBinding = keyBinding;
 		this.action = action;
 		this.toggleGroup = toggleGroup;
@@ -37,7 +45,8 @@ public class CalculatorKey {
 			descriptionValue = getDescriptionValue(displayValue);
 
 		button = toggleGroup != null ? new javax.swing.JToggleButton(displayValue) : new javax.swing.JButton(displayValue);
-		button.setForeground(isDigit ? java.awt.Color.blue : toggleGroup != null ? java.awt.Color.magenta : java.awt.Color.red);
+//		button.setForeground(isDigit ? java.awt.Color.blue : toggleGroup != null ? java.awt.Color.magenta : java.awt.Color.red);
+		button.setForeground(color == null ? isDigit ? java.awt.Color.blue : toggleGroup != null ? java.awt.Color.magenta : java.awt.Color.red : color);
 		button.addActionListener(actionHandler);
 		button.addKeyListener(actionHandler);
 		button.setToolTipText(descriptionValue + (keyBinding != ' ' ? " [" + keyBinding + "]" : ""));

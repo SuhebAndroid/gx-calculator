@@ -37,38 +37,49 @@ public abstract class FormDialog extends javax.swing.JDialog {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
 				dispose();
 			}});
-//		buttonsPanel = getButtonsPanel();
 		addButton(cancel);
 		getContentPane().add(buttonsPanel, java.awt.BorderLayout.SOUTH);
-	}
-
-//	protected abstract boolean save() ;
-	
-	/*
-	private javax.swing.JPanel getButtonsPanel() { 
-		javax.swing.JPanel p = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
-//		javax.swing.JButton save = new javax.swing.JButton("Save");
-		javax.swing.JButton cancel = new javax.swing.JButton("Cancel");
-
-		cancel.addActionListener(new java.awt.event.ActionListener() {
+/*
+		addKeyListener(new java.awt.event.KeyListener() {
 			@Override
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				dispose();
-			}});
-		save.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				if(save())
+			public void keyPressed(java.awt.event.KeyEvent e) {
+				if(e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE)
 					dispose();
-			}});
-
-		p.add(cancel);
-		p.add(save);
-		
-		return p;
+			}
+			@Override
+			public void keyReleased(java.awt.event.KeyEvent e) {}
+			@Override
+			public void keyTyped(java.awt.event.KeyEvent e) {}
+		});
+ */
 	}
-	 */
-	
+
+	protected static javax.swing.JPanel BuildForm(String[] labels, String[] values, javax.swing.JComponent[] fields) {
+		javax.swing.JPanel form = new javax.swing.JPanel(new javax.swing.SpringLayout());
+		String[] af = values; 
+		String[] al = labels;
+
+		for (int i = 0; i < al.length; i++) {
+			javax.swing.JLabel l = new javax.swing.JLabel(al[i]);
+			final javax.swing.JComponent f;
+			if(fields[i] != null)
+				f = fields[i];
+			else {
+				String s = af[i] == null ? "" : af[i];
+				if(s.length() < 0 && Character.getNumericValue(s.charAt(0)) < 0)
+					s = "";
+				f = i == al.length - 1 ? new CharTextField(s) : new javax.swing.JTextField(s);
+				fields[i] = f;				
+			}
+			l.setLabelFor(f);
+			form.add(l);
+			form.add(f);
+		}
+
+		SpringUtilities.makeCompactGrid(form, al.length, 2, 6, 6, 2, 2);
+		return form;
+	}
+
 	protected void addButtons(javax.swing.JButton[] buttons) {
 		if(buttons != null && buttons.length > 0)
 			for(int i = 0; i < buttons.length; i++)
@@ -79,4 +90,20 @@ public abstract class FormDialog extends javax.swing.JDialog {
 		buttonsPanel.add(button);
 	}
 	
+}
+
+class CharTextField extends javax.swing.JTextField implements java.awt.event.KeyListener {
+	private static final long serialVersionUID = 1L;
+
+	public CharTextField(String initialStr) {
+		super(initialStr);
+		addKeyListener(this);
+	}
+
+	public void keyPressed(java.awt.event.KeyEvent e) { 
+		setText("");
+		e.consume(); 
+	}
+	public void keyReleased(java.awt.event.KeyEvent e) { }
+	public void keyTyped(java.awt.event.KeyEvent e) { }
 }
