@@ -1,17 +1,15 @@
 package gx.calc;
 
-public class CalculatorPluginDescriptor {
+public class CalculatorPluginDescriptor extends CalculatorKeyDescriptor {
 	public String location;
 	public String className;
-	public String displayValue;
-	public String descriptionValue;
-	public char keyBinding;
-	public boolean enabled;
 	public boolean loaded;
+	public boolean enabled;
 
-	public CalculatorPluginDescriptor() { }
+	public CalculatorPluginDescriptor() { super(CalculatorKeyDescriptor.TYPE.INTERFACE);}
 	
 	public CalculatorPluginDescriptor(String s) throws Exception {
+		super(CalculatorKeyDescriptor.TYPE.INTERFACE);
 		String[] a = s.split("\t");
 		if(a.length != 6)
 			throw new Exception("Invalid argument");
@@ -25,6 +23,7 @@ public class CalculatorPluginDescriptor {
 	}
 
 	public CalculatorPluginDescriptor(String location, String classPath, String displayValue, String descriptionValue, char keyBinding, boolean enabled) {
+		super(CalculatorKeyDescriptor.TYPE.INTERFACE);
 		this.location = location;
 		this.className = classPath;
 		this.displayValue = displayValue;
@@ -37,5 +36,9 @@ public class CalculatorPluginDescriptor {
 		return location + "\t" + className + "\t" + displayValue + "\t" + descriptionValue + "\t" + keyBinding + "\t" + String.valueOf(enabled);
 	}
 	
+	public Object[] toArray() {
+		Object o[] = { this.location, this.className, this.displayValue, this.descriptionValue, this.keyBinding, String.valueOf(this.enabled) };
+		return o;
+	}
 }
 

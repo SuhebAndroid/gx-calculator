@@ -1,7 +1,15 @@
 // TODO : modes plugin decimal, octal, binary, hex, (miles, km etc)
-// TODO : samples plugin (vat 15%, dimentions 1/2 1/4, quick conversions e.g km->miles) 
-// TODO : setup website
+// TODO : more sample plugins project (dimentions, quick conversions e.g km->miles)
+// TODO : setup website + documentation
 // TODO : automate plugins, all jars in ./plugins to check manifest for descriptor
+// TODO : add googlecode info to about box
+// TODO : screenshots for site + usage/sample documentation
+// TODO : size / layout needs to be fixed if text size = large/loud
+// TODO : plugin dialogue does not persist enabled status properly
+// TODO : activate plugin without restart
+// TODO : jtxtExpression need to be a label and handled accordingly via global key event handler or with a dialogue
+// CHANGES:
+//	Math parser added with equations
 
 package gx.calc;
 
@@ -22,9 +30,11 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	private javax.swing.JMenu jmenuFile, jmenuEdit, jmenuHelp;
 	private javax.swing.JMenuItem jmenuitemPlugins, jmenuitemExit, jmenuitemAbout, jmenuitemCopy, jmenuitemPaste;
 	private javax.swing.JRadioButtonMenuItem jmenuitemSmall, jmenuitemMedium, jmenuitemLarge, jmenuitemLoud;
-	
 	private javax.swing.JLabel jlbOutput;
+//private javax.swing.JTextField jtxtExpression;
+private javax.swing.JLabel jlblExpression;
 	private javax.swing.JPanel jplMaster, jplControl;
+	private final javax.swing.JPanel jplMoreButtons;
 	
 	private CalculatorKey keys[];
 	private java.util.ArrayList<CalculatorKey> pluginKeys;
@@ -72,13 +82,18 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		static final int MEGABYTE		= 31; 
 		static final int GIGABYTE 		= 32; 
 		static final int TERABYTE 		= 33; 
-		static final int length			= 34; 
+//		static final int length			= 34; 
+static final int EXPRESSION 	= 34; 
+static final int EXPRESSION_BRACE_OPEN 	= 35; 
+static final int EXPRESSION_BRACE_CLOSE 	= 36; 
+static final int EXPRESSION_X 	= 37; 
+static final int length			= 38; 
 // for future reference
-		static final int BINARY 		= 34; 
-		static final int OCTAL			= 35; 
-		static final int DECIMAL		= 36; 
-		static final int HEXADECIMAL	= 37; 
-//		static final int length			= 38; 
+		static final int BINARY 		= 39; 
+		static final int OCTAL			= 40; 
+		static final int DECIMAL		= 41; 
+		static final int HEXADECIMAL	= 42; 
+//		static final int length			= 43; 
 	}
 
 	public Calculator() {
@@ -92,59 +107,19 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		jmenuFile = new javax.swing.JMenu("File");
 		jmenuFile.setMnemonic(java.awt.event.KeyEvent.VK_F);
 
-		jmenuitemPlugins = new javax.swing.JMenuItem("Plugins");
-		jmenuitemPlugins.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_P, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemPlugins.addActionListener(this);
-		jmenuFile.add(jmenuitemPlugins);
-
-		jmenuitemExit = new javax.swing.JMenuItem("Exit");
-		jmenuitemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_X, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemExit.addActionListener(this);
-		jmenuFile.add(jmenuitemExit);
-
-
 		jmenuEdit = new javax.swing.JMenu("Edit");
 		jmenuEdit.setMnemonic(java.awt.event.KeyEvent.VK_E);
 
-		jmenuitemCopy = new javax.swing.JMenuItem("Copy");
-		jmenuitemCopy.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_C, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemCopy.addActionListener(this);
-		jmenuEdit.add(jmenuitemCopy);
+		jmenuitemPlugins = getMenuItem("Plugins", java.awt.event.KeyEvent.VK_P, jmenuFile);
+		jmenuitemExit = getMenuItem("Exit", java.awt.event.KeyEvent.VK_X, jmenuFile); 
 
-		jmenuitemPaste = new javax.swing.JMenuItem("Paste");
-		jmenuitemPaste.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_V, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemPaste.addActionListener(this);
-		jmenuEdit.add(jmenuitemPaste);
-		
+		jmenuitemCopy = getMenuItem("Copy", java.awt.event.KeyEvent.VK_C, jmenuEdit);
+		jmenuitemPaste = getMenuItem("Paste", java.awt.event.KeyEvent.VK_V, jmenuEdit);
 		jmenuEdit.addSeparator();
-
-		jmenuitemSmall = new javax.swing.JRadioButtonMenuItem("Small Text");
-		jmenuitemSmall.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_S, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemSmall.setFont(new java.awt.Font(jmenuitemSmall.getFont().getName(), jmenuitemSmall.getFont().getStyle(), DISPLAY_SIZE.SMALL));
-		jmenuitemSmall.addActionListener(this);
-		jmenuitemSmall.setSelected(Configuration.getDisplaySize() == DISPLAY_SIZE.SMALL);
-		jmenuEdit.add(jmenuitemSmall);
-		
-		jmenuitemMedium = new javax.swing.JRadioButtonMenuItem("Medium Text");
-		jmenuitemMedium.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_M, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemMedium.setFont(new java.awt.Font(jmenuitemMedium.getFont().getName(), jmenuitemMedium.getFont().getStyle(), DISPLAY_SIZE.MEDIUM));
-		jmenuitemMedium.setSelected(Configuration.getDisplaySize() == DISPLAY_SIZE.MEDIUM);
-		jmenuitemMedium.addActionListener(this);
-		jmenuEdit.add(jmenuitemMedium);
-		
-		jmenuitemLarge = new javax.swing.JRadioButtonMenuItem("Large Text");
-		jmenuitemLarge.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_L, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemLarge.setFont(new java.awt.Font(jmenuitemLarge.getFont().getName(), jmenuitemLarge.getFont().getStyle(), DISPLAY_SIZE.LARGE));
-		jmenuitemLarge.setSelected(Configuration.getDisplaySize() == DISPLAY_SIZE.LARGE);
-		jmenuitemLarge.addActionListener(this);
-		jmenuEdit.add(jmenuitemLarge);
-		
-		jmenuitemLoud = new javax.swing.JRadioButtonMenuItem("Loud Text");
-		jmenuitemLoud.setAccelerator(javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_O, java.awt.event.ActionEvent.CTRL_MASK));
-		jmenuitemLoud.setFont(new java.awt.Font(jmenuitemLoud.getFont().getName(), jmenuitemLoud.getFont().getStyle(), DISPLAY_SIZE.LOUD));
-		jmenuitemLoud.setSelected(Configuration.getDisplaySize() == DISPLAY_SIZE.LOUD);
-		jmenuitemLoud.addActionListener(this);
-		jmenuEdit.add(jmenuitemLoud);
+		jmenuitemSmall = getRdioButtonMenuItem("Small Text", java.awt.event.KeyEvent.VK_S, DISPLAY_SIZE.SMALL, jmenuEdit);
+		jmenuitemMedium = getRdioButtonMenuItem("Medium Text", java.awt.event.KeyEvent.VK_M, DISPLAY_SIZE.MEDIUM, jmenuEdit);
+		jmenuitemLarge = getRdioButtonMenuItem("Large Text", java.awt.event.KeyEvent.VK_L, DISPLAY_SIZE.LARGE, jmenuEdit);
+		jmenuitemLoud = getRdioButtonMenuItem("LoudText", java.awt.event.KeyEvent.VK_O, DISPLAY_SIZE.LOUD, jmenuEdit);
 		
 		jmenuHelp = new javax.swing.JMenu("Help");
 		jmenuHelp.setMnemonic(java.awt.event.KeyEvent.VK_H);
@@ -161,33 +136,43 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		
 		jplMaster = new javax.swing.JPanel();
 
+javax.swing.JPanel jplInOut= new javax.swing.JPanel(new java.awt.BorderLayout());
+jlblExpression = new javax.swing.JLabel("", javax.swing.JLabel.RIGHT);
+jplInOut.add(jlblExpression, java.awt.BorderLayout.NORTH);
+jlblExpression.setVisible(false);
+//jtxtExpression = new javax.swing.JTextField("");
+//jtxtExpression.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+//jplInOut.add(jtxtExpression, java.awt.BorderLayout.NORTH);
+//jtxtExpression.setVisible(false);
+
 		jlbOutput = new javax.swing.JLabel("0", javax.swing.JLabel.RIGHT);
 		jlbOutput.setBackground(java.awt.Color.white);
 		jlbOutput.setOpaque(true);
 		
-		getContentPane().add(jlbOutput, java.awt.BorderLayout.NORTH);
+jplInOut.add(jlbOutput, java.awt.BorderLayout.SOUTH);
+getContentPane().add(jplInOut, java.awt.BorderLayout.NORTH);
+//		getContentPane().add(jlbOutput, java.awt.BorderLayout.NORTH);
 
 		keys= new CalculatorKey[KEYS.length];
 		pluginKeys = new java.util.ArrayList<CalculatorKey>();
 		
 		for (int i = 0; i <= 9; i++) {
 			final Integer j = new Integer(i);
-			keys[i] = new CalculatorKey(j.toString(), new CalculatorAction() { public void ActionHandler() { addDigitToDisplay(j.intValue()); } }, actionHandler);
+			keys[i] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { addDigitToDisplay(j.intValue()); } }, actionHandler, j.toString());
 		}
 
-		keys[KEYS.CHANGE_SIGN] = new CalculatorKey("+/-", "Change sign", '!', new CalculatorAction() { public void ActionHandler() { processSignChange(); } }, actionHandler);
-		keys[KEYS.DECIMAL_POINT] = new CalculatorKey(".", "Decimal point", new CalculatorAction() { public void ActionHandler() { addDecimalPoint(); } }, actionHandler);
-		keys[KEYS.EQUALS] = new CalculatorKey("=", "Equals", new CalculatorAction() { public void ActionHandler() { processEquals(); } }, actionHandler);
-		keys[KEYS.DIVIDE] = new CalculatorKey("/", "Dvide", '/', new CalculatorAction() { public void ActionHandler() { processOperator("/"); } }, actionHandler, "operators");
-		keys[KEYS.MULTIPLY] = new CalculatorKey("*", "Multiply", '*', new CalculatorAction() { public void ActionHandler() { processOperator("*"); } }, actionHandler, "operators"); 
-		keys[KEYS.MINUS] = new CalculatorKey("-", "Minus", '-', new CalculatorAction() { public void ActionHandler() { processOperator("-"); } }, actionHandler, "operators");
-		keys[KEYS.PLUS] = new CalculatorKey("+", "Plus", '+', new CalculatorAction() { public void ActionHandler() { processOperator("+"); } }, actionHandler, "operators"); 
-		keys[KEYS.SQUARE_ROOT] = new CalculatorKey("sqrt", "Square root", ' ', new CalculatorAction() { public void ActionHandler() {
+		keys[KEYS.CHANGE_SIGN] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processSignChange(); } }, actionHandler, "+/-", "Change sign", '!');
+		keys[KEYS.DECIMAL_POINT] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { addDecimalPoint(); } }, actionHandler, ".", "Decimal point");
+		keys[KEYS.EQUALS] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processEquals(); } }, actionHandler, "=", "Equals");
+		keys[KEYS.DIVIDE] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processOperator("/"); } }, actionHandler, "/", "Dvide", '/', "operators");
+		keys[KEYS.MULTIPLY] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processOperator("*"); } }, actionHandler, "*", "Multiply", '*', "operators"); 
+		keys[KEYS.MINUS] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processOperator("-"); } }, actionHandler, "-", "Minus", '-', "operators");
+		keys[KEYS.PLUS] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processOperator("+"); } }, actionHandler, "+", "Plus", '+', "operators"); 
+		keys[KEYS.SQUARE_ROOT] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() {
 				if (displayMode != ERROR_MODE) {
 				   try {
 						if (getDisplayString().indexOf("-") == 0)
 						    displayError("Invalid input for function!");
-
 						displayResult(Math.sqrt(getNumberInDisplay()));
 					}
 					catch(Exception ex) {
@@ -196,9 +181,9 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 					}
 				}
 			}
-		}, actionHandler);
+		}, actionHandler, "sqrt", "Square root", ' ');
 
-		keys[KEYS.POWER] = new CalculatorKey("1/x", "Power", ' ', new CalculatorAction() {
+		keys[KEYS.POWER] = new CalculatorKey(new CalculatorAction() {
 			public void ActionHandler() {
 				if (displayMode != ERROR_MODE){
 					try {
@@ -213,11 +198,11 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 					}
 				}
 			}
-		}, actionHandler);
+		}, actionHandler, "1/x", "Power", ' ');
 
-		keys[KEYS.PERCENT] = new CalculatorKey("%", "Percent", new CalculatorAction() { public void ActionHandler() { processPercent(); } }, actionHandler);
+		keys[KEYS.PERCENT] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { processPercent(); } }, actionHandler, "%", "Percent");
 
-		keys[KEYS.BACKSPACE] = new CalculatorKey("Backspace", "Backspace", ' ', new CalculatorAction() {
+		keys[KEYS.BACKSPACE] = new CalculatorKey(new CalculatorAction() {
 			public void ActionHandler() {
 				if (displayMode != ERROR_MODE){
 					setDisplayString(getDisplayString().substring(0,
@@ -227,24 +212,28 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 						setDisplayString("0");
 				}
 			}
-		}, actionHandler);
+		}, actionHandler, "Backspace", "Backspace", ' ');
 
-		keys[KEYS.CLEAR_EXISTING] = new CalculatorKey("CE", "Clear existing", ' ', new CalculatorAction() { public void ActionHandler() { clearExisting(); } }, actionHandler); 
-		keys[KEYS.CLEAR_ALL] = new CalculatorKey("C", "Clear all", ' ', new CalculatorAction() { public void ActionHandler() { clearAll(); } }, actionHandler);
+		keys[KEYS.CLEAR_EXISTING] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { clearExisting(); } }, actionHandler, "CE", "Clear existing", ' '); 
+		keys[KEYS.CLEAR_ALL] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { clearAll(); } }, actionHandler, "C", "Clear all", ' ');
+keys[KEYS.EXPRESSION] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { 
+	jlblExpression.setVisible(!jlblExpression.isVisible());
+	jlblExpression.setText(jlblExpression.isVisible() ? " " : "");
+	pack();
+} }, actionHandler, "Ex", "Expression", ' ', "expression");
+		jplMoreButtons = new javax.swing.JPanel(new javax.swing.SpringLayout());
 
-		final javax.swing.JPanel jplMoreButtons = new javax.swing.JPanel(new javax.swing.SpringLayout());
-
-		keys[KEYS.MORE_FUNCTIONS] = new CalculatorKey(">>", "More functions", '>', new CalculatorAction() { public void ActionHandler() { jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); Configuration.setWindowExtended(jplMoreButtons.isVisible()); pack(); } }, actionHandler, "more");
-		keys[KEYS.BIT] = new CalculatorKey("i", "Bits", 'b', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.BIT); } }, actionHandler, "dataSizes");
-		keys[KEYS.KILOBIT] = new CalculatorKey("kB", "Kilobits", 'k', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.KILOBIT); } }, actionHandler, "dataSizes");
-		keys[KEYS.MEGABIT] = new CalculatorKey("mB", "Megabits", 'm', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.MEGABIT); } }, actionHandler, "dataSizes");
-		keys[KEYS.GIGABIT] = new CalculatorKey("gB", "Gigabits", 'g', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.GIGABIT); } }, actionHandler, "dataSizes");
-		keys[KEYS.TERABIT] = new CalculatorKey("tB", "Terabits", 't', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.TERABIT); } }, actionHandler, "dataSizes");
-		keys[KEYS.BYTE] = new CalculatorKey("B", "Bytes", 'B', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.BYTE); } }, actionHandler, "dataSizes");
-		keys[KEYS.KILOBYTE] = new CalculatorKey("KB", "Kilobytes", 'K', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.KILOBYTE); } }, actionHandler, "dataSizes");
-		keys[KEYS.MEGABYTE] = new CalculatorKey("MB", "Megabytes", 'M', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.MEGABYTE); } }, actionHandler, "dataSizes");
-		keys[KEYS.GIGABYTE] = new CalculatorKey("GB", "Gigabytes", 'G', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.GIGABYTE); } }, actionHandler, "dataSizes");
-		keys[KEYS.TERABYTE] = new CalculatorKey("TB", "Terabytes", 'T', new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.TERABYTE); } }, actionHandler, "dataSizes");
+		keys[KEYS.MORE_FUNCTIONS] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); /*Configuration.setWindowExtended(jplMoreButtons.isVisible());*/ pack(); } }, actionHandler, ">>", "More functions", '>', "more");
+		keys[KEYS.BIT] = 	  new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.BIT); } },  actionHandler, 	   "i", "Bits", 'b', "dataSizes");
+		keys[KEYS.KILOBIT] =  new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.KILOBIT); } }, actionHandler,  "kB", "Kilobits", 'k', "dataSizes");
+		keys[KEYS.MEGABIT] =  new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.MEGABIT); } }, actionHandler,  "mB", "Megabits", 'm', "dataSizes");
+		keys[KEYS.GIGABIT] =  new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.GIGABIT); } }, actionHandler,  "gB", "Gigabits", 'g', "dataSizes");
+		keys[KEYS.TERABIT] =  new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.TERABIT); } }, actionHandler,  "tB", "Terabits", 't', "dataSizes");
+		keys[KEYS.BYTE] = 	  new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.BYTE); } },  actionHandler, 	   "B", "Bytes", 'B', "dataSizes");
+		keys[KEYS.KILOBYTE] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.KILOBYTE); } }, actionHandler, "KB", "Kilobytes", 'K', "dataSizes");
+		keys[KEYS.MEGABYTE] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.MEGABYTE); } }, actionHandler, "MB", "Megabytes", 'M', "dataSizes");
+		keys[KEYS.GIGABYTE] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.GIGABYTE); } }, actionHandler, "GB", "Gigabytes", 'G', "dataSizes");
+		keys[KEYS.TERABYTE] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setNumericMode(KEYS.TERABYTE); } }, actionHandler, "TB", "Terabytes", 'T', "dataSizes");
 
 		jplControl = new javax.swing.JPanel();
 		jplControl.setLayout(new java.awt.FlowLayout());
@@ -252,6 +241,7 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		jplControl.add(keys[KEYS.BACKSPACE].getButton());
 		jplControl.add(keys[KEYS.CLEAR_EXISTING].getButton());
 		jplControl.add(keys[KEYS.CLEAR_ALL].getButton());
+jplControl.add(keys[KEYS.EXPRESSION].getButton());
 		jplControl.add(keys[KEYS.MORE_FUNCTIONS].getButton());
 
 		javax.swing.JPanel jplButtons = new javax.swing.JPanel();
@@ -315,8 +305,8 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		else
 			setLocationRelativeTo(null);
 
-		keys[KEYS.MORE_FUNCTIONS].getButton().setSelected(Configuration.isWindowExtended());
-		jplMoreButtons.setVisible(Configuration.isWindowExtended());
+//		keys[KEYS.MORE_FUNCTIONS].getButton().setSelected(Configuration.isWindowExtended());
+//		jplMoreButtons.setVisible(Configuration.isWindowExtended());
 		
 		initPlugins(jplPluginButtons);
 
@@ -326,8 +316,13 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		setResizable(false);
 		setVisible(true);
 		setTextSize(this);
-		pack();
 		addWindowListener(this);
+		pack(); 
+		// TODO : this has no effect, works for menu actions but not here :( buttons still half hidden at startup
+		// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
+		jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); 
+		jplMoreButtons.setVisible(!jplMoreButtons.isVisible());
+		pack();
 		setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 		java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(
 		        new java.awt.KeyEventDispatcher() {
@@ -341,6 +336,26 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 
 	}	//End of Constructor Calculator
 	
+	private javax.swing.JMenuItem getMenuItem(String text, int keyEvent, javax.swing.JMenu parentMenu) {
+		javax.swing.JMenuItem mi = new javax.swing.JMenuItem(text);
+		mi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(keyEvent, java.awt.event.ActionEvent.CTRL_MASK));
+		mi.addActionListener(this);
+		if(parentMenu != null)
+			parentMenu.add(mi);
+		return mi;
+	}
+
+	private javax.swing.JRadioButtonMenuItem getRdioButtonMenuItem(String text, int keyEvent, int size, javax.swing.JMenu parentMenu) {
+		javax.swing.JRadioButtonMenuItem mi = new javax.swing.JRadioButtonMenuItem(text);
+		mi.setFont(new java.awt.Font(mi.getFont().getName(), mi.getFont().getStyle(), size));
+		mi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(keyEvent, java.awt.event.ActionEvent.CTRL_MASK));
+		mi.setSelected(Configuration.getDisplaySize() == size);
+		mi.addActionListener(this);
+		if(parentMenu != null)
+			parentMenu.add(mi);
+		return mi;
+	}
+
 	private void initPlugins(javax.swing.JPanel p){
 		String failures = "";
 		int addedButtons = 0;
@@ -353,10 +368,10 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 					java.net.URLClassLoader clazzLoader = new java.net.URLClassLoader(new java.net.URL[]{f.toURI().toURL()});
 					final Object o = clazzLoader.loadClass(d.className).newInstance();
 					if(o instanceof CalculatorPlugin) {
-						CalculatorKey c = new CalculatorKey(d.displayValue , d.descriptionValue, d.keyBinding, 
-								new CalculatorAction() { public void ActionHandler() { 
-									doCalculation((CalculatorPlugin)o); 
-									} }, actionHandler );
+						CalculatorKey c = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { 
+							doCalculation((CalculatorPlugin)o); 
+							} } , actionHandler, d.displayValue, 
+								d.descriptionValue, d.keyBinding );
 						p.add(c.getButton());
 						pluginKeys.add(c);
 						d.loaded = true;
@@ -387,7 +402,7 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	}
 
 	private void setNumericMode(int numericMode){
-		for(int i = 0; i < keys.length; i++) 
+		for(int i = 0; i < KEYS.length; i++) 
 			if(keys[i].isToggleGroup("dataSizes")) 
 				keys[i].getButton().setSelected(i == numericMode);
 		
@@ -481,6 +496,7 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	}
 
 	private void setDisplayString(String s){
+		
 		if(s.endsWith(".0"))
 			s = s.substring(0, s.length() - 2);
 		jlbOutput.setText(s);
@@ -491,22 +507,31 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	}
 
 	private void addDigitToDisplay(int digit) {
-		if (clearOnNextDigit)
-			setDisplayString("");
-
-		String inputString = getDisplayString();
-		
-		if (inputString.indexOf("0") == 0) 
-			inputString = inputString.substring(1);
-
-		if ((!inputString.equals("0") || digit > 0) && inputString.length() < MAX_INPUT_LENGTH)
-			setDisplayString(inputString + digit);
-
-		displayMode = INPUT_MODE;
-		clearOnNextDigit = false;
+		if(jlblExpression.isVisible()){
+			jlblExpression.setText(jlblExpression.getText() + digit);
+		}
+		else {
+			if (clearOnNextDigit)
+				setDisplayString("");
+			
+			String inputString = getDisplayString();
+			
+			if (inputString.indexOf("0") == 0) 
+				inputString = inputString.substring(1);
+			
+			if ((!inputString.equals("0") || digit > 0) && inputString.length() < MAX_INPUT_LENGTH)
+				setDisplayString(inputString + digit);
+			
+			displayMode = INPUT_MODE;
+			clearOnNextDigit = false;
+		}
 	}
 
 	private void addDecimalPoint() {
+		if(jlblExpression.isVisible()){
+			jlblExpression.setText(jlblExpression.getText() + ".");
+		}
+		else {			
 		displayMode = INPUT_MODE;
 
 		if (clearOnNextDigit)
@@ -517,8 +542,9 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		// If the input string already contains a decimal point, don't do anything to it.
 		if (inputString.indexOf(".") < 0)
 			setDisplayString(inputString + ".");
+		}
 	}
-
+	
 	private void processSignChange() {
 		if (displayMode == INPUT_MODE) {
 			String input = getDisplayString();
@@ -554,7 +580,12 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	}
 
 	private void processOperator(String op) {
-		for(int i = 0; i < keys.length; i++) {
+		if(jlblExpression.isVisible()){
+			jlblExpression.setText(jlblExpression.getText() + op);
+		}
+		else {			
+
+		for(int i = 0; i < KEYS.length; i++) {
 			if(keys[i].isToggleGroup("operators")) 
 				keys[i].getButton().setSelected(keys[i].getButton().getText() == op);
 		}
@@ -577,6 +608,7 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 			clearOnNextDigit = true;
 			lastOperator = op;
 		}
+		}
 	}
 
 	private void processPercent(){
@@ -597,7 +629,7 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	private void processEquals(){
 		double result = 0;
 
-		for(int i = 0; i < keys.length; i++) {
+		for(int i = 0; i < KEYS.length; i++) {
 			if(keys[i].isToggleGroup("operators")) 
 				keys[i].getButton().setSelected(false);
 		}
@@ -606,9 +638,15 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 			try  {
 				result = processLastOperator();
 				displayResult(result);
+				String exp = jlblExpression.getText();
+				if(exp.length() > 0)
+					setDisplayString(String.valueOf(MathParser.processEquation(exp.replaceAll("[xX]", jlbOutput.getText()))));
 			}
 			catch (DivideByZeroException e)	{
 				displayError("Cannot divide by zero!");
+			}
+			catch (NumberFormatException e)	{
+				displayError("Invalid expression!");
 			}
 
 			lastOperator = "0";
@@ -616,30 +654,14 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 	}
 	
 	private double processLastOperator() throws DivideByZeroException {
-		double result = 0;
-		double numberInDisplay = getNumberInDisplay();
-
-		if (lastOperator.equals("/")) {
-			if (numberInDisplay == 0)
-				throw (new DivideByZeroException());
-
-			result = lastNumber / numberInDisplay;
-		}
-			
-		if (lastOperator.equals("*"))
-			result = lastNumber * numberInDisplay;
-
-		if (lastOperator.equals("-"))
-			result = lastNumber - numberInDisplay;
-
-		if (lastOperator.equals("+"))
-			result = lastNumber + numberInDisplay;
-
-		return result;
+		if(!lastOperator.equals("0"))
+			return Double.valueOf(MathParser.processEquation(lastNumber + lastOperator + getNumberInDisplay()));
+		else return getNumberInDisplay();		
 	}
 
 	private void displayResult(double result) {
-		setDisplayString(Double.toString(result));
+		java.text.DecimalFormat df = new java.text.DecimalFormat("###.########");
+		setDisplayString(df.format(result));
 		lastNumber = result;
 		displayMode = RESULT_MODE;
 		clearOnNextDigit = true;
@@ -687,9 +709,9 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 
 	public void actionPerformed(java.awt.event.ActionEvent e) {
 		if(e.getSource() == jmenuitemAbout){
-				new AboutDialog(this, "About GX Calculator", true);
+				new AboutDialog(this);
 		}else if(e.getSource() == jmenuitemPlugins){
-				new PluginsDialog(this);
+			new PluginsDialog(this);
 		}else if(e.getSource() == jmenuitemExit){
 			System.exit(0);
 		}else if(e.getSource() == jmenuitemCopy || e.getActionCommand() == "Copy"){
@@ -705,12 +727,20 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 			jmenuitemLarge.setSelected(false);
 			jmenuitemLoud.setSelected(false);
 			pack();
+			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible());
+			pack();
 		}else if(e.getSource() == jmenuitemMedium){
 			setTextSize(DISPLAY_SIZE.MEDIUM, this);
 			jmenuitemSmall.setSelected(false);
 			jmenuitemMedium.setSelected(true);
 			jmenuitemLarge.setSelected(false);
 			jmenuitemLoud.setSelected(false);
+			pack();
+			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible());
 			pack();
 		}else if(e.getSource() == jmenuitemLarge){
 			setTextSize(DISPLAY_SIZE.LARGE, this);
@@ -719,6 +749,10 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 			jmenuitemLarge.setSelected(true);
 			jmenuitemLoud.setSelected(false);
 			pack();
+			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible());
+			pack();
 		}else if(e.getSource() == jmenuitemLoud){
 			setTextSize(DISPLAY_SIZE.LOUD, this);
 			jmenuitemSmall.setSelected(false);
@@ -726,10 +760,14 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 			jmenuitemLarge.setSelected(false);
 			jmenuitemLoud.setSelected(true);
 			pack();
+			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible()); 
+			jplMoreButtons.setVisible(!jplMoreButtons.isVisible());
+			pack();
 		}	
 
-		for(int i = 0; i < keys.length; i++)
-			if(e.getSource() == keys[i].getButton()) {
+		for(int i = 0; i < KEYS.length; i++)
+			if(keys[i] != null && e.getSource() == keys[i].getButton()) {
 				keys[i].doAction();
 				break;
 			}
@@ -759,7 +797,7 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 			break;
 		default:
 			if(c != ' ') {
-				for(int i = 0; i < keys.length; i++)
+				for(int i = 0; i < KEYS.length; i++)
 					if(c == keys[i].getKeyChar()) {
 						keys[i].doAction();
 						actionTaken = true;
@@ -778,9 +816,11 @@ public class Calculator extends javax.swing.JFrame implements CalculatorActionHa
 		
 		return actionTaken;
 	}
+/*
 	public static void main(String args[]) {
 		new Calculator();
 	}
+ */
 
 	@Override
 	public void windowClosing(java.awt.event.WindowEvent e) {
@@ -815,3 +855,4 @@ class DivideByZeroException extends Exception{
 
 interface CalculatorActionHandler extends java.awt.event.ActionListener, java.awt.event.KeyListener , java.awt.event.WindowListener { }
 interface CalculatorAction { void ActionHandler(); }
+ 

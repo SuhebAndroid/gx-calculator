@@ -5,8 +5,8 @@ public class AboutDialog extends javax.swing.JDialog implements java.awt.event.A
 	javax.swing.JButton jbnOk;
 	java.awt.Image img;
 	
-	public AboutDialog (javax.swing.JFrame parent, String title, boolean modal){
-		super(parent, title, modal);
+	public AboutDialog(javax.swing.JFrame parent){
+		super(parent, "About GX Calculator", true);
 
 		setLocationRelativeTo(parent);
 		img = new javax.swing.ImageIcon(getClass().getResource("/gx/calc/calculator.png")).getImage();
@@ -16,6 +16,8 @@ public class AboutDialog extends javax.swing.JDialog implements java.awt.event.A
 		text.append("\nDeveloper:	GX");
 		text.append("\nVersion:	" + Configuration.VERSION);
 		text.append("\nChanges:\n");
+		text.append("\n1.2.1 Presision 2009/10");
+		text.append("\n    Display pesesion changed to 6 decimal places i.e. 100*1.15 no longer shows 114.99999999999999 but 115");
 		text.append("\n1.2 Plugins 2009/09");
 		text.append("\n    plugins are now supported with customizable buttons");
 		text.append("\n    states persistant, the toggle state of extra buttons, screen location and text size is kept when closing the application");
