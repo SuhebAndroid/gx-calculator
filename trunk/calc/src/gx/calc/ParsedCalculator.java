@@ -1,9 +1,19 @@
 // TODO : expression remains in label, need to decide when to clear it
+// TODO : plugins to be revised and used for conversion groups
+// TODO : plugins to be automated, all jars in ./plugins to check manifest for descriptor
+// TODO : plugins to activate without restart
+// TODO : expression plugins form to validate expression 
+// TODO : plugin dialog grid to handle key/mouse events e.g. up/down selects row, double click edits row
+// TODO : setup website + documentation
+// TODO : screenshots for site + usage/sample documentation
+// TODO : *size / layout needs to be fixed if text size = large/loud
+// TODO : *plugin dialogue does not persist enabled status properly
+// TODO : preferences being lost sometimes
+// TODO : export/import expressions and plugin settings
+// DONE : copy/paste to handle expressions
+// check if * are still valid bugs
 
 package gx.calc;
- 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JRadioButtonMenuItem;
 
 public class ParsedCalculator extends javax.swing.JFrame implements CalculatorActionHandler { 
 	private static final long serialVersionUID = 1L;
@@ -11,13 +21,12 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 	final int MAX_INPUT_LENGTH = 30;
 
 	private javax.swing.JMenu jmenuFile, jmenuEdit, jmenuView, jmenuHelp;
-	private javax.swing.JMenuItem jmenuitemPlugins, jmenuitemSaveExpression, jmenuitemExit, jmenuitemAbout, jmenuitemCopy, jmenuitemPaste;
+	private javax.swing.JMenuItem jmenuitemPlugins, jmenuitemSaveExpression, jmenuitemExit, jmenuitemAbout, jmenuitemCopyExpression, jmenuitemCopyValue, jmenuitemPaste;
 	private javax.swing.JRadioButtonMenuItem jmenuitemSmall, jmenuitemMedium, jmenuitemLarge, jmenuitemLoud;
 	private javax.swing.JCheckBoxMenuItem jmenuitemShowPlugins, jmenuitemShowExpressions;
 	private javax.swing.JLabel jlbOutput;
 	private javax.swing.JLabel jlblExpression;
 	private javax.swing.JPanel jplMaster, jplControl;
-//	private final javax.swing.JPanel jplCustomButtons;
 	private javax.swing.JPanel jplPluginButtons;
 	private javax.swing.JPanel jplExpressionButtons;
 
@@ -77,19 +86,20 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 		jmenuitemSaveExpression = getMenuItem("Save Expression", java.awt.event.KeyEvent.VK_S, jmenuFile);
 		jmenuitemExit = getMenuItem("Exit", java.awt.event.KeyEvent.VK_X, jmenuFile); 
 
-		jmenuitemCopy = getMenuItem("Copy", java.awt.event.KeyEvent.VK_C, jmenuEdit);
+		jmenuitemCopyExpression = getMenuItem("Copy Expression", java.awt.event.KeyEvent.VK_E, jmenuEdit);
+		jmenuitemCopyValue = getMenuItem("Copy Value", java.awt.event.KeyEvent.VK_C, jmenuEdit);
 		jmenuitemPaste = getMenuItem("Paste", java.awt.event.KeyEvent.VK_V, jmenuEdit);
 
 		jmenuView = new javax.swing.JMenu("View");
 		jmenuView.setMnemonic(java.awt.event.KeyEvent.VK_V);
-		jmenuitemShowPlugins = (JCheckBoxMenuItem) getMenuItem("Show Plugin keys", java.awt.event.KeyEvent.VK_G, jmenuView, true);
-		jmenuitemShowExpressions = (JCheckBoxMenuItem) getMenuItem("Show Expression keys", java.awt.event.KeyEvent.VK_R, jmenuView, true);
+		jmenuitemShowPlugins = (javax.swing.JCheckBoxMenuItem) getMenuItem("Show Plugin keys", java.awt.event.KeyEvent.VK_G, jmenuView, true);
+		jmenuitemShowExpressions = (javax.swing.JCheckBoxMenuItem) getMenuItem("Show Expression keys", java.awt.event.KeyEvent.VK_R, jmenuView, true);
 
 		jmenuView.addSeparator();
-		jmenuitemSmall = (JRadioButtonMenuItem) getMenuItem("Small Text", java.awt.event.KeyEvent.VK_S, jmenuView, DISPLAY_SIZE.SMALL);
-		jmenuitemMedium = (JRadioButtonMenuItem) getMenuItem("Medium Text", java.awt.event.KeyEvent.VK_M, jmenuView, DISPLAY_SIZE.MEDIUM);
-		jmenuitemLarge = (JRadioButtonMenuItem) getMenuItem("Large Text", java.awt.event.KeyEvent.VK_L, jmenuView, DISPLAY_SIZE.LARGE);
-		jmenuitemLoud = (JRadioButtonMenuItem) getMenuItem("LoudText", java.awt.event.KeyEvent.VK_O, jmenuView, DISPLAY_SIZE.LOUD);
+		jmenuitemSmall = (javax.swing.JRadioButtonMenuItem) getMenuItem("Small Text", java.awt.event.KeyEvent.VK_S, jmenuView, DISPLAY_SIZE.SMALL);
+		jmenuitemMedium = (javax.swing.JRadioButtonMenuItem) getMenuItem("Medium Text", java.awt.event.KeyEvent.VK_M, jmenuView, DISPLAY_SIZE.MEDIUM);
+		jmenuitemLarge = (javax.swing.JRadioButtonMenuItem) getMenuItem("Large Text", java.awt.event.KeyEvent.VK_L, jmenuView, DISPLAY_SIZE.LARGE);
+		jmenuitemLoud = (javax.swing.JRadioButtonMenuItem) getMenuItem("LoudText", java.awt.event.KeyEvent.VK_O, jmenuView, DISPLAY_SIZE.LOUD);
 
 		jmenuHelp = new javax.swing.JMenu("Help");
 		jmenuHelp.setMnemonic(java.awt.event.KeyEvent.VK_H);
@@ -144,8 +154,8 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 			}
 		}, actionHandler, "<-", "Backspace", ' ');
 
-		keys[KEYS.CLEAR_EXISTING] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setDisplayString("0"); } }, actionHandler, "CE", "Clear existing", ' '); 
-		keys[KEYS.CLEAR_ALL] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { jlblExpression.setText(" "); setDisplayString("0"); } }, actionHandler, "C", "Clear all", ' ');
+		keys[KEYS.CLEAR_EXISTING] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { setOutputValue("0"); } }, actionHandler, "CE", "Clear existing", ' '); 
+		keys[KEYS.CLEAR_ALL] = new CalculatorKey(new CalculatorAction() { public void ActionHandler() { jlblExpression.setText(" "); setOutputValue("0"); } }, actionHandler, "C", "Clear all", ' ');
 
 		javax.swing.JPanel jplCustomButtons = new javax.swing.JPanel();
 
@@ -215,8 +225,6 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 		jplPluginButtons.setVisible(Configuration.showPluginkeys());
 		jplExpressionButtons.setVisible(Configuration.showExpressionkeys());
 		loadExtensionKeys();
-//		initPlugins(jplPluginButtons);
-//		initExpressions(jplExpressionButtons);
 		
 		java.awt.GridBagLayout gbl = new java.awt.GridBagLayout();
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -245,11 +253,6 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 	}	//End of Constructor Calculator
 
 	private javax.swing.JMenuItem getMenuItem(String text, int keyEvent, javax.swing.JMenu parentMenu) {
-		/*javax.swing.JMenuItem mi = new javax.swing.JMenuItem(text);
-		mi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(keyEvent, java.awt.event.ActionEvent.CTRL_MASK));
-		mi.addActionListener(this);
-		if(parentMenu != null)
-			parentMenu.add(mi);*/
 		return getMenuItem(text, keyEvent, parentMenu, -1, false);
 	}
 	
@@ -314,24 +317,13 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 			javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),
 					"Some plugins failed to load: '" + failures, "Load plugin failed",
 					javax.swing.JOptionPane.OK_OPTION);
-		if(addedButtons > 0) 
+		if(addedButtons > 0) {
+			jmenuitemShowPlugins.setEnabled(true);
 			jmenuitemShowPlugins.setSelected(Configuration.showPluginkeys());
+			jplPluginButtons.setVisible(Configuration.showPluginkeys());
+		}
 		else
 			jmenuitemShowPlugins.setEnabled(false);
-		/*
-		if(addedButtons > 0) {
-			int rows = 5;
-			int cols = 1;
-			if(addedButtons > 5) {
-				cols = (int)Math.ceil((double)addedButtons / 5);
-			}
-			if(addedButtons % 5 != 0) 
-				for(int i = 0; i < addedButtons - (cols * 5); i++)
-					p.add(new javax.swing.JLabel()); // dummy components
-			
-			p.setLayout(new java.awt.GridLayout(rows, cols, 2, 2));
-		}
-		 */
 	}
 	
 	private void initExpressions(javax.swing.JPanel p){
@@ -356,8 +348,11 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 				addedButtons++;
 			}
 		}
-		if(addedButtons > 0) 
+		if(addedButtons > 0) {
+			jmenuitemShowExpressions.setEnabled(true);
 			jmenuitemShowExpressions.setSelected(Configuration.showExpressionkeys());
+			jplExpressionButtons.setVisible(Configuration.showExpressionkeys());
+		}
 		else
 			jmenuitemShowExpressions.setEnabled(false);
 
@@ -366,20 +361,22 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 	private void doCalculation(CalculatorPlugin p) {
 		double result = getNumberInDisplay();
 		result = p.process(result);
-		setDisplayString(String.valueOf(result));
+		setOutputValue(String.valueOf(result));
 	}
 
-	private void setDisplayString(String s){
+	private void setOutputValue(String s){
 
 		if(s.endsWith(".0"))
 			s = s.substring(0, s.length() - 2);
 		if (s.length() < 1)
 			s = "0";
-		jlbOutput.setText(s);
-	}
 
-	private String getDisplayString () {
-		return jlbOutput.getText();
+		try {
+			java.text.DecimalFormat df = new java.text.DecimalFormat("###.########");
+			s = df.format(Double.parseDouble(s));
+		} catch(Exception e) { e.printStackTrace(); }
+
+		jlbOutput.setText(s);
 	}
 
 	private void addDigitToDisplay(int digit) {
@@ -421,7 +418,7 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 
 		try	{
 			result = getNumberInDisplay() / 100;
-			displayResult(result);
+			setOutputValue(result + "");
 		}
 		catch(Exception ex)	{
 			displayError("Invalid input for function!");
@@ -436,20 +433,15 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 		try  {
 			String exp = jlblExpression.getText();
 			if(exp.length() > 0)
-				setDisplayString(String.valueOf(MathParser.processEquation(exp.replaceAll("[xX]", jlbOutput.getText()))));
+				setOutputValue(String.valueOf(MathParser.processEquation(exp.replaceAll("[xX]", jlbOutput.getText()))));
 		}
 		catch (NumberFormatException e)	{
 			displayError("Invalid expression!");
 		}
 	}
 
-	private void displayResult(double result) {
-		java.text.DecimalFormat df = new java.text.DecimalFormat("###.########");
-		setDisplayString(df.format(result));
-	}
-
 	private void displayError(String errorMessage) {
-		setDisplayString(errorMessage);
+		setOutputValue(errorMessage);
 	}
 
 	private void setTextSize(java.awt.Container container) {
@@ -475,8 +467,6 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 		if ((clipboardContent != null) &&  (clipboardContent.isDataFlavorSupported (java.awt.datatransfer.DataFlavor.stringFlavor))) {
 			try {
 				tempString = (String) clipboardContent.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor);
-				// ensure it is numeric
-				Double.valueOf(tempString);
 			}
 			catch (Exception e) {
 				tempString = null;
@@ -496,12 +486,20 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 			new PluginsDialog(this, p);
 		}else if(e.getSource() == jmenuitemExit){
 			System.exit(0);
-		}else if(e.getSource() == jmenuitemCopy || e.getActionCommand() == "Copy"){
-			writeToClipboard(getDisplayString());
+		}else if(e.getSource() == jmenuitemCopyExpression || e.getActionCommand() == "Copy"){
+			writeToClipboard(jlblExpression.getText());
+		}else if(e.getSource() == jmenuitemCopyValue || e.getActionCommand() == "Copy Value"){
+			writeToClipboard(jlbOutput.getText());
 		}else if(e.getSource() == jmenuitemPaste || e.getActionCommand() == "Paste"){
 			String s = copyFromClipboard();
-			if(s != null)
-				setDisplayString(s);
+			if(s != null) {
+				s = s.trim();
+				if(s.length() > 0) {
+					java.util.regex.Matcher m = java.util.regex.Pattern.compile("[^\\d\\-\\+\\*\\/\\.\\(\\)x\\\\]").matcher(s);
+					if(!m.find())
+						jlblExpression.setText(s);
+				}
+			}
 		}else if(e.getSource() == jmenuitemShowPlugins){
 			Configuration.setShowPluginkeys(!Configuration.showPluginkeys());
 			jmenuitemShowPlugins.setSelected(Configuration.showPluginkeys());
@@ -517,45 +515,21 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 			clearMenuSizeSelection();
 			jmenuitemSmall.setSelected(true);
 			pack();
-/*
-			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible()); 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible());
-			pack();
- */
 		}else if(e.getSource() == jmenuitemMedium){
 			setTextSize(DISPLAY_SIZE.MEDIUM, this);
 			clearMenuSizeSelection();
 			jmenuitemMedium.setSelected(true);
-			pack();
-/*
-			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible()); 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible());
- */
 			pack();
 		}else if(e.getSource() == jmenuitemLarge){
 			setTextSize(DISPLAY_SIZE.LARGE, this);
 			clearMenuSizeSelection();
 			jmenuitemLarge.setSelected(true);
 			pack();
-/*
-			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible()); 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible());
-			pack();
- */
 		}else if(e.getSource() == jmenuitemLoud){
 			setTextSize(DISPLAY_SIZE.LOUD, this);
 			clearMenuSizeSelection();
 			jmenuitemLoud.setSelected(true);
 			pack();
-/*
-			// for some strange reason packing doesent seem to work as expected, hiding then showing panel helps 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible()); 
-			jplCustomButtons.setVisible(!jplCustomButtons.isVisible());
-			pack();
- */
 		}	
 
 		for(int i = 0; i < keys.length; i++)
@@ -645,5 +619,5 @@ public class ParsedCalculator extends javax.swing.JFrame implements CalculatorAc
 
 }		//End of Swing Calculator Class.
 
-//interface CalculatorActionHandler extends java.awt.event.ActionListener, java.awt.event.KeyListener , java.awt.event.WindowListener { }
-//interface CalculatorAction { void ActionHandler(); }
+interface CalculatorActionHandler extends java.awt.event.ActionListener, java.awt.event.KeyListener , java.awt.event.WindowListener { }
+interface CalculatorAction { void ActionHandler(); }

@@ -4,6 +4,7 @@ public class Configuration
 {
 	public static final String APPLICATION_NAME = "GX Calculator";
 	public static final String VERSION = "1.2";
+	private static boolean loaded; 
 
 	private static java.awt.Point WINDOW_PREVIOUS_LOCATION;
 	//	private static boolean WINDOW_EXTENDED; 
@@ -18,7 +19,7 @@ public class Configuration
 	public static void load() {
     	java.util.Properties config = new java.util.Properties();
     	try {
-    		java.io.File cf = new java.io.File(Configuration.CONFIGURATION_FILE);
+    		java.io.File cf = new java.io.File(CONFIGURATION_FILE);
 
     		if(cf.exists())
     			config.load(new java.io.FileInputStream(cf));
@@ -56,10 +57,12 @@ public class Configuration
 					EXPRESSIONS.add(new CalculatorExpressionDescriptor(e[i]));
 			} catch(Exception e) { e.printStackTrace(); }
 		}
-
+		loaded = true;
     }
 	
 	public static void store() {
+		if(!loaded)
+			return;
     	try {
     		java.util.Properties config = new java.util.Properties();
     		
@@ -82,7 +85,7 @@ public class Configuration
 
     		config.setProperty("EXPRESSIONS", sb.toString());    		
 
-    		java.io.File cf = new java.io.File(Configuration.CONFIGURATION_FILE);
+    		java.io.File cf = new java.io.File(CONFIGURATION_FILE);
 
     		if(!cf.exists()) {
     			cf.getParentFile().mkdirs();
@@ -135,7 +138,7 @@ public class Configuration
 	}
 
 	public static void setDisplaySize(int displaySize) {
-		Configuration.DISPLAY_SIZE = displaySize;
+		DISPLAY_SIZE = displaySize;
 	}
 
 	public static int getDisplaySize() {

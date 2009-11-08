@@ -139,7 +139,6 @@ public class PluginForm extends FormDialog {
 		}
 		caller.loadTables();
 
-		Configuration.store();
 		return true;
 	}
 }

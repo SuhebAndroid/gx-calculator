@@ -35,16 +35,14 @@ public class ExpressionForm extends FormDialog {
 
 	private boolean save() {
 		for(CalculatorExpressionDescriptor ce : Configuration.getExpressions())
-			if(ce.expression.equals(((javax.swing.JTextField)fields[0]).getText()) && ce.displayValue.equals((((javax.swing.JTextField)fields[1]).getText()))) {
+			if(calculatorExpression != null && !calculatorExpression.equals(ce) && ce.expression.equals(((javax.swing.JTextField)fields[0]).getText()) && ce.displayValue.equals((((javax.swing.JTextField)fields[1]).getText()))) {
 				javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),
 						"At least the expression and label combination must be unique", "Fields must be unique", javax.swing.JOptionPane.OK_OPTION);
 				return false;
 			}
 		if(fields != null) {
-			if(calculatorExpression == null) {
+			if(calculatorExpression == null) 
 				calculatorExpression = new CalculatorExpressionDescriptor();
-				Configuration.getExpressions().add(calculatorExpression);
-			}
 			if(!Configuration.getExpressions().contains(calculatorExpression))
 				Configuration.getExpressions().add(calculatorExpression);
 
@@ -55,7 +53,6 @@ public class ExpressionForm extends FormDialog {
 				calculatorExpression.keyBinding = ((javax.swing.JTextField)fields[3]).getText().charAt(0);
 		}
 		caller.loadTables();
-		Configuration.store();
 		return true;
 	}
 }

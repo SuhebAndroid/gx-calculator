@@ -96,7 +96,8 @@ static final int length			= 38;
 //		static final int length			= 43; 
 	}
 
-	public Calculator() {
+	@Deprecated
+	private Calculator() {
 		Configuration.load();
 		try {
 			setIconImage(new javax.swing.ImageIcon(getClass().getResource("/gx/calc/calculator.png")).getImage());
@@ -853,6 +854,6 @@ class DivideByZeroException extends Exception{
 	public DivideByZeroException(String s) { super(s); }
 }
 
-interface CalculatorActionHandler extends java.awt.event.ActionListener, java.awt.event.KeyListener , java.awt.event.WindowListener { }
-interface CalculatorAction { void ActionHandler(); }
+//interface CalculatorActionHandler extends java.awt.event.ActionListener, java.awt.event.KeyListener , java.awt.event.WindowListener { }
+//interface CalculatorAction { void ActionHandler(); }
  
